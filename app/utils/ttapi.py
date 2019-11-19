@@ -1,6 +1,7 @@
 import tweepy
 import config
 import datetime
+from textblob import TextBlob
 
 
 class tweet:
@@ -21,7 +22,7 @@ class tweet:
         results = []
         for tweet in tweets:
             results.append({'id': tweet.id, 'text': tweet.text, 'name': tweet.user.name, 'uid': tweet.user.id,
-                            'date': tweet.created_at, 'place': tweet.place.name})
+                            'date': tweet.created_at, 'place': tweet.place.name, 'senti': self.get_senti(tweet.text)})
         return results
 
     def get_geotweet(self, lat, long):
@@ -31,7 +32,7 @@ class tweet:
         if config.TwitterConfig.Proxy != '':
             api = tweepy.API(auth, proxy=config.TwitterConfig.Proxy)
 
-        places = api.geo_search(lat=lat, long=long, granularity="city")
+        places = api.geo_search(lat=lat, long=long, granularity="neighborhood")
         if len(places) == 0:
             return
         place_id = places[0].id
@@ -41,5 +42,11 @@ class tweet:
         results = []
         for tweet in tweets:
             results.append({'id': tweet.id, 'text': tweet.text, 'name': tweet.user.name, 'uid': tweet.user.id,
-                            'date': tweet.created_at, 'place': tweet.place.name})
+                            'date': tweet.created_at, 'place': tweet.place.name, 'senti': self.get_senti(tweet.text)})
         return results
+
+    def get_senti(self, text):
+        senti = TextBlob(text)
+        polar = senti.sentiment.polarity
+        # print('sentiment result-----',polar)
+        return polar
